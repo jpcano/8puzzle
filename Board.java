@@ -91,13 +91,16 @@ public class Board {
     private void exch(int[][] board, Coordinate a, Coordinate b) {
         int old;
         old = board[a.getX()][a.getY()];
-        board[a.getX()][b.getY()] = board[b.getX()][b.getY()];
+        board[a.getX()][a.getY()] = board[b.getX()][b.getY()];
         board[b.getX()][b.getY()] = old;
     }
 
     private boolean isInside(Coordinate p) {
-        if (p.getX() > 0 && p.getX() < N && p.getY() > 0 && p.getY() < N)
+        //System.out.println("checking " + p.getX() + " " + p.getY());
+        if (p.getX() >= 0 && p.getX() < N && p.getY() >= 0 && p.getY() < N) {
+            //System.out.println("ok  " + p.getX() + " " + p.getY());
             return true;
+        }
         return false;
     }
 
@@ -115,17 +118,16 @@ public class Board {
 
     public Iterable<Board> neighbors() {
         Stack<Board> neighbors = new Stack<Board>();
-        Stack<Coordinate> coordsNeighbors;
         int[][] blocksDuplicated;
         Coordinate zero;
         Board b;
 
         zero = findZero();
-        coordsNeighbors = getCrossNeighbors(zero);
-        for (Coordinate neighbor : coordsNeighbors) {
+        for (Coordinate neighbor : getCrossNeighbors(zero)) {
             blocksDuplicated = duplicateBlocks();
             exch(blocksDuplicated, zero, neighbor);
             b = new Board(blocksDuplicated);
+            neighbors.push(b);
         }
 
         return neighbors;
@@ -136,6 +138,7 @@ public class Board {
             Coordinate n;
 
             neighbors = new Stack<Coordinate>();
+            //System.out.println(c.getX() + " " + c.getY());
             n = new Coordinate(c.getX(), c.getY() - 1);
             if (isInside(n))
                 neighbors.push(n);
@@ -176,5 +179,29 @@ public class Board {
             out += "\n";
         }
         return out;
+    }
+
+    public static void main (String[] args) { 
+        int[][] blocks = {{0, 1, 3},{4, 2, 5},{7, 8, 6}};
+        Board b = new Board(blocks);
+        System.out.println("Start board:");
+        System.out.println(b);
+        System.out.println("Dimension: " + b.dimension());
+        System.out.println("Hamming: " + b.hamming());
+        System.out.println("Manhattan: " + b.manhattan());
+        System.out.println("Is Goal?: " + b.isGoal());
+
+        Board twin = b.twin();
+        System.out.println("Twin:");
+        System.out.println(twin);
+
+        System.out.println("Board equals Twin?: " + b.equals(twin));
+
+        System.out.println("Neighbors:");
+        for (Board n: b.neighbors()) {
+            System.out.println(n);
+        }
+
+
     }
 }
