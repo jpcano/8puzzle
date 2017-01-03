@@ -10,6 +10,7 @@ import edu.princeton.cs.algs4.Stack;
 public class Board {
     private int[][] blocks;
     private int N;
+    private int manhattan = -1;
 
     public Board (int[][] blocks) {
         N = blocks.length; 
@@ -47,17 +48,22 @@ public class Board {
     }
 
     public int manhattan() {
-        int manhattan = 0;
+        int m = manhattan;
+        if (m != -1) return m;
+        m = 0;
         int x_goal, y_goal;
          for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                x_goal = blocks[i][j] / N - 1;
-                y_goal = blocks[i][j] % N;
-                manhattan += Math.abs(i - x_goal);
-                manhattan += Math.abs(j - y_goal);
+                if (blocks[i][j] != 0) {
+                    x_goal = (blocks[i][j] - 1) / N;
+                    y_goal = (blocks[i][j] - 1) % N;
+                    m += Math.abs(i - x_goal);
+                    m += Math.abs(j - y_goal);
+                }
             }
          }
-         return manhattan;
+         manhattan = m;
+         return m;
     }
 
     public boolean isGoal() {
@@ -109,6 +115,9 @@ public class Board {
         if (y == null) return false;
         if (this.getClass() != y.getClass()) return false;
         Board that = (Board) y;
+        // Checking dimensions of the boards
+        if (this.dimension() != that.dimension()) return false;
+        // Checking contents of the boards
         for (int i = 0; i < N; i++)
             for (int j = 0; j < N; j++)
                 if (blocks[i][j] != that.blocks[i][j])
@@ -182,7 +191,7 @@ public class Board {
     }
 
     public static void main (String[] args) { 
-        int[][] blocks = {{0, 1, 3},{4, 2, 5},{7, 8, 6}};
+        int[][] blocks = {{5, 8, 7},{1, 4, 6},{3, 0, 2}};
         Board b = new Board(blocks);
         System.out.println("Start board:");
         System.out.println(b);

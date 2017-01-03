@@ -7,14 +7,13 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Stack;
-import edu.princeton.cs.algs4.ST;
 import java.util.Comparator;
 
 public class Solver {
 
     private Node problem;
     private int moves = 0;
-    boolean solvable = true;
+    private boolean solvable = true;
     private Node solution = null;
 
     public Solver (Board initial) {
@@ -24,9 +23,9 @@ public class Solver {
     }
 
     private class Node implements Comparable<Node> {
-        private Board board;
-        private int moves;
-        private Node prev;
+        Board board;
+        int moves;
+        Node prev;
 
         private Node(Board board, int moves, Node prev) {
             this.board = board;
@@ -54,7 +53,13 @@ public class Solver {
             int pb = b.moves + b.board.manhattan();
             if (pa < pb)       return -1;
             else if (pa > pb)  return 1;      
-            else               return 0;  
+            else {
+                pa = a.board.manhattan();
+                pb = b.board.manhattan();
+                if (pa < pb)        return -1;
+                else if (pa > pb)   return 1;
+                else return 0;
+            }  
         }
     }
     
@@ -75,6 +80,8 @@ public class Solver {
         Stack<Board> result = new Stack<Board>();
 
         actualNode = solve();
+        if (actualNode == null)
+            return null;
         while (actualNode != null) {
                 result.push(actualNode.board);
                 actualNode = actualNode.prev;
@@ -86,7 +93,6 @@ public class Solver {
         MinPQ<Node> actualPQ, testPQ;
         Node actualNode,testNode;
         Node neighbor;
-        ST<Node, int[]> actualBST, testBST;
 
         if (solvable && solution != null)
             return solution;
@@ -97,24 +103,20 @@ public class Solver {
         testNode = new Node(problem.board.twin(), 0, null);
         actualPQ = new MinPQ<Node>(priorityOrder());
         actualPQ.insert(actualNode);
-        actualBST = new ST<Node, int[]>();
         testPQ = new MinPQ<Node>(priorityOrder());
         testPQ.insert(testNode);
-        testBST = new ST<Node, int[]>();
-
-        actualBST.put(actualNode, null);
-        testBST.put(testNode, null);
+    
         while (true) {
             if (actualNode != null) {
                 if (actualNode.board.isGoal())
                     break;
-                actualNode = searchNode(actualNode, actualPQ, actualBST);
+                actualNode = searchNode(actualNode, actualPQ);
             }
             else break;
             if (testNode != null) {
                 if (testNode.board.isGoal())
                     break;
-                testNode = searchNode(testNode, testPQ, testBST);
+                testNode = searchNode(testNode, testPQ);
             }      
         }
 
@@ -128,7 +130,7 @@ public class Solver {
         }
     }
     
-    private Node searchNode (Node root, MinPQ<Node> pq, ST<Node, int[]> bst) {
+    private Node searchNode (Node root, MinPQ<Node> pq) {
         Node actualNode;
         Node neighbor;
         Board actualBoard;
@@ -136,10 +138,9 @@ public class Solver {
         actualNode = root;
         actualBoard = actualNode.board;
         for (Board b: actualBoard.neighbors()) {
-            neighbor = new Node(b, actualNode.moves + 1, actualNode);
-            if (!bst.contains(neighbor)) {
+            if (actualNode.prev == null || !b.equals(actualNode.prev.board)) {
+                neighbor = new Node(b, actualNode.moves + 1, actualNode);
                 pq.insert(neighbor);
-                bst.put(neighbor, null);
             }
         }
         if (pq.isEmpty())
